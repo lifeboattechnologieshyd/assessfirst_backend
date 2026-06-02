@@ -16,6 +16,9 @@ ENABLE_SILK = False
 
 
 ALLOWED_HOSTS = [
-    "vocabbee.com",
-    "www.vocabbee.com",
+    "localhost",
+    "127.0.0.1",
+    "api.assessfirst.com",
+    "assessfirst.com",
+    "www.assessfirst.com",
 ]
