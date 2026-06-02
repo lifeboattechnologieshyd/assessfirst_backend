@@ -13,7 +13,7 @@ jobs:
       - name: Add SSH key
         run: |
           mkdir -p ~/.ssh
-          printf '%s' "${{ secrets.ASSESSFIRST_EC2_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          printf '%s' "${{ secrets.ASSESSFIRST_EC2_PRIVATE_KEY_B64 }}" | base64 --decode > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keygen -y -f ~/.ssh/id_rsa >/dev/null
 
