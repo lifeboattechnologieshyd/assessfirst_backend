@@ -17,12 +17,20 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Add SSH key
+      - name: Debug SSH Key
         run: |
           mkdir -p ~/.ssh
-          printf '%s' "${{ secrets.ASSESSFIRST_EC2_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keygen -lf ~/.ssh/id_rsa
+
+          printf '%s' "${{ secrets.ASSESSFIRST_EC2_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+
+          echo "File Size:"
+          wc -c ~/.ssh/id_rsa
+
+          echo "First Line:"
+          head -n 1 ~/.ssh/id_rsa
+
+          echo "Last Line:"
+          tail -n 1 ~/.ssh/id_rsa
 
       - name: Add known hosts
         run: |
