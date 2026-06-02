@@ -1,4 +1,4 @@
-name: Deploy AssessFirst
+name: Development
 
 on:
   push:
@@ -13,19 +13,20 @@ jobs:
       - name: Add SSH key
         run: |
           mkdir -p ~/.ssh
-          cat > ~/.ssh/id_rsa <<'EOF'
-          ${{ secrets.ASSESSFIRST_EC2_PRIVATE_KEY }}
-          EOF
+          echo "${{ secrets.ASSESSFIRST_EC2_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
 
       - name: Add known hosts
-        run: |
-          ssh-keyscan -H "${{ secrets.ASSESSFIRST_EC2_HOST }}" >> ~/.ssh/known_hosts
+        run: ssh-keyscan -H "${{ secrets.ASSESSFIRST_EC2_HOST }}" >> ~/.ssh/known_hosts
 
-      - name: Deploy
+      - name: Execute script on EC2
         run: |
-          ssh "${{ secrets.ASSESSFIRST_EC2_USER }}@${{ secrets.ASSESSFIRST_EC2_HOST }}" << 'EOF'
+          ssh "${{ secrets.ASSESSFIRST_EC2_USER }}@${{ secrets.ASSESSFIRST_EC2_HOST }}" << EOF
+          set -e
           cd /home/ubuntu/assessfirst_backend
-          git pull origin main
-          docker compose --env-file .env.docker -f deploy/compose/docker-compose.yaml up -d --build
+          git checkout main
+          git pull
+          docker network create assessfirst-network || true
+          docker compose -f ./deploy/compose/docker-compose.yaml --env-file .env.docker up -d --build --remove-orphans postgres backend
+          docker image prune -f
           EOF
