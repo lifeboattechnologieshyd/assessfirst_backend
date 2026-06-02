@@ -17,6 +17,5 @@ ENABLE_SILK = False
 ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
-    "assessfirst.ai",
-    "www.assessfirst.ai",
+    "api.assessfirst.ai",
 ]
