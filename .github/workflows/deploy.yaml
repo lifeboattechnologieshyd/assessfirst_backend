@@ -14,8 +14,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Add SSH key
         run: |
@@ -27,21 +26,33 @@ jobs:
         run: |
           ssh-keyscan -H "${{ secrets.ASSESSFIRST_EC2_HOST }}" >> ~/.ssh/known_hosts
 
-      - name: Deploy to EC2
+      - name: Deploy
         run: |
           ssh -i ~/.ssh/id_rsa \
-            "${{ secrets.ASSESSFIRST_EC2_USER }}@${{ secrets.ASSESSFIRST_EC2_HOST }}" << 'EOF'
+            ${{ secrets.ASSESSFIRST_EC2_USER }}@${{ secrets.ASSESSFIRST_EC2_HOST }} << EOF
           set -e
 
           cd /home/ubuntu/assessfirst_backend
 
-          git pull origin main
+          git fetch origin
+          git reset --hard origin/main
+          git clean -fd
+
+          docker network create assessfirst-network || true
 
           docker compose \
             -p assessfirst \
-            --env-file .env.docker \
             -f deploy/compose/docker-compose.yaml \
-            up -d --build
+            --env-file .env.docker \
+            down || true
+
+          docker rm -f assessfirst-backend assessfirst-postgres 2>/dev/null || true
+
+          docker compose \
+            -p assessfirst \
+            -f deploy/compose/docker-compose.yaml \
+            --env-file .env.docker \
+            up -d --build --remove-orphans postgres backend
 
           docker image prune -f
           EOF
